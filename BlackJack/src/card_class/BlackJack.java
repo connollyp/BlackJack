@@ -4,251 +4,209 @@ import java.util.Scanner;
 
 public class BlackJack extends Player {
 
-	public Player[] players;
+	// BlackJack Data
+	private Player[] players;
 
-	public Deck deck;
+	private Deck deck;
 
-	public boolean firstGame = true;
-
+	/**
+	 * Constructor for BlackJack class
+	 * 
+	 * @param none
+	 * @return none
+	 */
 	public BlackJack() {
-		this.deck = new Deck(true);
-
 		this.players = new Player[2];
+
+		this.deck = new Deck();
 	}
 
-	public void initalizePlayers(boolean firstGame, BlackJack game) {
+	/**
+	 * Initializes the game of BlackJack, populates players array, creates deck to
+	 * be used, deals two cards to each player
+	 * 
+	 * @param game
+	 *            instance of blackjack that is being used
+	 * @return none
+	 */
+	public static void initializeGame(BlackJack game) {
+		game.deck = new Deck(false);
 
-		if (firstGame == true) {
-			game.players[0] = new Player(true);
-			game.players[1] = new Player();
+		game.players[0] = new Player(true);
 
-			game.players[0].hand = new Hand();
-			game.players[1].hand = new Hand();
+		game.players[1] = new Player();
 
-			game.players[0].hand.addCard(game.deck.draw());
-			game.players[1].hand.addCard(game.deck.draw());
-
-			game.players[0].hand.addCard(game.deck.draw());
-			game.players[1].hand.addCard(game.deck.draw());
-		} else {
-			game.deck = new Deck(true);
-
-			game.players[0].hand.reset();
-			game.players[1].hand.reset();
-
-			game.players[0].hand.addCard(game.deck.draw());
-			game.players[1].hand.addCard(game.deck.draw());
-
-			game.players[0].hand.addCard(game.deck.draw());
-			game.players[1].hand.addCard(game.deck.draw());
+		for (int i = 0; i < game.players.length; i++) {
+			Hand hand = game.players[i].getHand();
+			for (int k = 0; k < 2; k++) {
+				hand.addCard(game.deck.draw());
+			}
 		}
 	}
 
-	public String hitOrStay(BlackJack game) {
+	/**
+	 * Gets the user's answer on whether they would like to add a card to their hand
+	 * or not
+	 * 
+	 * @param Player
+	 *            The player who's answer is desired
+	 * @return Either HIT or STAY as a string
+	 */
+	public static String hitOrStay(Player player) {
 		@SuppressWarnings("resource")
 		Scanner input = new Scanner(System.in);
 
-		String answer = "";
+		String answer;
 
-		@SuppressWarnings("unused")
 		boolean valid;
 
+		System.out.println();
+		System.out.println("Your current hand is: ");
+		printHand(player.getHand());
+		System.out.println();
+		System.out.println("Total: " + sum(player.getHand()));
+		System.out.println();
 		do {
-
 			System.out.print("Would you like you like to hit or stay?: ");
 
 			answer = input.nextLine().toUpperCase();
 
-			if (answer.equals("HIT") || answer.equals("STAY") == true) {
+			if (answer.equals("HIT") || answer.equals("STAY")) {
 				valid = true;
 			} else {
 				valid = false;
 			}
-		} while (valid = false);
-
-		return answer.toUpperCase();
-
-	}
-
-	public String botHitOrStay(BlackJack game) {
-		int sum = sum(game.players[1].hand.hand);
-
-		String answer;
-
-		if (sum < 17) {
-			answer = "HIT";
-		} else {
-			answer = "STAY";
-		}
+		} while (valid == false);
 		return answer;
 	}
 
-	public Boolean promptUser(BlackJack game) {
-		@SuppressWarnings("resource")
-		Scanner input = new Scanner(System.in);
+	/**
+	 * Automated decision maker on whether the given player should hit or stay
+	 * 
+	 * @param player
+	 *            the player that is being automated
+	 * @return Either HIT or STAY depending on the outcome of the algorithms
+	 */
+	public static String botHitOrStay(Player player) {
+		int botSum = sum(player.getHand());
 
-		String answer = "";
-
-		boolean value;
-
-		do {
-			System.out.printf("Would you like to play again(Y/N)?: ");
-
-			answer = input.nextLine().toUpperCase();
-
-			if (answer.equals("Y") || answer.equals("N")) {
-				value = true;
-			} else {
-				value = false;
-			}
-
-		} while (value == false);
-
-		if (answer.equals("Y")) {
-			return true;
-		} else {
-			return false;
+		if (botSum < 17) {
+			return "HIT";
 		}
-
+		if (17 <= botSum) {
+			return "STAY";
+		}
+		return "STAY";
 	}
-	
-	public int sum(Card[] hand) {
-		@SuppressWarnings("resource")
-		Scanner input = new Scanner(System.in);
-		
+
+	/**
+	 * Prints a player's name, hand, and sum of hand
+	 * 
+	 * @param Player
+	 *            The player who's information you wish to print
+	 * @return none
+	 */
+	public static void printPlayer(Player player) {
+		System.out.println();
+		System.out.println(player.getName() + "'s hand:");
+		System.out.println();
+		printHand(player.getHand());
+		System.out.println();
+		System.out.println("Total: " + sum(player.getHand()));
+	}
+
+	/**
+	 * Gets the sum of the numeric values of all the cards in a given hand
+	 * 
+	 * @param hand
+	 *            hand who's sum is desired
+	 * @return the sum of all the numeric values of the cards in the given hand
+	 */
+	public static int sum(Hand hand) {
 		int sum = 0;
-		
-		int answer;
-		
-		boolean correctAnswer;
-		
-		for (int i = 0; i < hand.length; i++) {
-			if(10 <= hand[i].number) {
+
+		for (int i = 0; i < hand.getSize(); i++) {
+			if (hand.getCards()[i].getNumber() < 10) {
+				sum = hand.getCards()[i].getNumber() + sum;
+			} else if (10 <= hand.getCards()[i].getNumber()) { // Face cards are given a numeric value of 10 to reflect
+																// the rules of Black Jack
 				sum = sum + 10;
-			}//else if (hand.hand[i].number == 1) {
-				//do {
-					//System.out.print("Would you like the value of Ace to be 1 or 11?: ");
-					
-					//answer = input.nextInt();
-					
-					//if(answer == 1 || answer == 11) {
-						//correctAnswer = true;
-					//}else {
-						//correctAnswer = false;
-					//}
-				//}while(correctAnswer == false);
-				
-				//sum = sum + answer;
-			else {
-				sum = sum + hand[i].number;
 			}
 		}
 		return sum;
-		
 	}
 
-	private void play(BlackJack game) {
+	/**
+	 * Prints the results of the game, displaying the hands of both players and
+	 * their sum, then determines winner
+	 * 
+	 * @param game
+	 *            instance of BlackJack currently being used
+	 * @return none
+	 */
+	public static void getResults(BlackJack game) {
+		for (int i = 0; i < game.players.length; i++) {
+			printPlayer(game.players[i]);
+		}
 
-		String userAnswer = "";
+		int botSum = sum(game.players[1].getHand());
 
-		String botAnswer = "";
+		int playerSum = sum(game.players[0].getHand());
 
-		int playerHand;
+		if (botSum <= 21 && playerSum <= 21 && botSum < playerSum) {
+			System.out.println();
+			System.out.println("You win!");
+		} else if (21 < botSum && playerSum <= 21) {
+			System.out.println();
+			System.out.println("You Win!");
+		} else if (botSum <= 21 && playerSum <= 21 && playerSum < botSum) {
+			System.out.println();
+			System.out.println("You lose!");
+		} else if (botSum <= 21 && 21 < playerSum) {
+			System.out.println();
+			System.out.println("You lose!");
+		} else {
+			System.out.println();
+			System.out.println("Tie!");
+		}
+	}
 
-		int botHand;
+	/**
+	 * Implements game logic and calls previous methods to execute a game of
+	 * BlackJack
+	 * 
+	 * @param game
+	 *            current instance of BlackJack being played
+	 * @return none
+	 */
+	public static void play(BlackJack game) {
+		initializeGame(game);
 
-		boolean playAgain;
+		shuffle(game.deck);
 
-		initalizePlayers(firstGame, game);
+		String answer;
 
 		do {
-			playerHand = sum(game.players[0].hand.hand);
-
-			botHand = sum(game.players[1].hand.hand);
-
-			System.out.println("Your hand is: " + playerHand);
-
-			userAnswer = hitOrStay(game);
-
-			if (userAnswer.equals("STAY")) {
-				while (botAnswer.equals("STAY") == false && botHand <= 21) {
-					botAnswer = botHitOrStay(game);
-					game.players[1].hand.addCard(game.deck.draw());
-				}
-				break;
-			} else {
-				game.players[0].hand.addCard(game.deck.draw());
-
-				botAnswer = botHitOrStay(game);
-
-				if (botAnswer.equals("HIT")) {
-					game.players[1].hand.addCard(game.deck.draw());
-				} else {
-					continue;
-				}
+			answer = hitOrStay(game.players[0]);
+			if (answer.equals("HIT")) {
+				game.players[0].getHand().addCard(game.deck.draw());
 			}
-		} while (sum(game.players[0].hand.hand) <= 21 && sum(game.players[1].hand.hand) <= 21);
+		} while (answer.equals("HIT") && sum(game.players[0].getHand()) <= 21);
 
-		int sumOfUserHand = sum(game.players[0].hand.hand);
-		
-		int sumOfBotHand = sum(game.players[1].hand.hand);
-		
-		if (sumOfUserHand <= 21 && 21 < sumOfBotHand) {
-			System.out.println("Your hand is: " + sumOfUserHand);
-			System.out.println("Opponent's hand is: " + sumOfBotHand);
-			System.out.println("You win!");
-			playAgain = promptUser(game);
-			if (playAgain == true) {
-				firstGame = false;
-				play(game);
-			} else {
-				System.exit(0);
+		do {
+			answer = botHitOrStay(game.players[1]);
+			if (answer.equals("HIT")) {
+				game.players[1].getHand().addCard(game.deck.draw());
 			}
-		}
-		if (sumOfBotHand <= 21 && 21 < sumOfUserHand) {
-			System.out.println("Your hand is: " + sumOfUserHand);
-			System.out.println("Opponent's hand is: " + sumOfBotHand);
-			System.out.println("You lose!");
-			playAgain = promptUser(game);
-			if (playAgain == true) {
-				firstGame = false;
-				play(game);
-			} else {
-				System.exit(0);
-			}
-		}
-		if ((sumOfBotHand <= 21 && sumOfUserHand <= 21)
-				&& (sumOfUserHand < sumOfBotHand)) {
-			System.out.println("Your hand is: " + sumOfUserHand);
-			System.out.println("Opponent's hand is: " + sumOfBotHand);
-			System.out.println("You lose!");
-			playAgain = promptUser(game);
-			if (playAgain == true) {
-				firstGame = false;
-				play(game);
-			} else {
-				System.exit(0);
-			}
-		}
-		if ((sumOfBotHand <= 21 && sumOfUserHand <= 21)
-				&& (sumOfBotHand < sumOfUserHand)) {
-			System.out.println("Your hand is: " + sumOfUserHand);
-			System.out.println("Opponent's hand is: " + sumOfBotHand);
-			System.out.println("You win!");
-			playAgain = promptUser(game);
-			if (playAgain == true) {
-				firstGame = false;
-				play(game);
-			} else {
-				System.exit(0);
-			}
-		}
+		} while (answer.equals("HIT") && sum(game.players[1].getHand()) <= 21);
+
+		getResults(game);
 	}
 
 	public static void main(String[] args) {
 		BlackJack game = new BlackJack();
 
-		game.play(game);
+		play(game);
 
 	}
 
