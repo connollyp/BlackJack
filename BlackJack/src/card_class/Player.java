@@ -1,7 +1,11 @@
 package card_class;
 
 import java.util.Scanner;
-
+/**
+ * 
+ * @author connollyp2
+ *
+ */
 public class Player extends Hand {
 
 	// Player Data

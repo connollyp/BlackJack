@@ -1,5 +1,9 @@
 package card_class;
-
+/**
+ * 
+ * @author connollyp2
+ *
+ */
 public class Hand extends Deck {
 
 	// Hand data
