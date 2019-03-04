@@ -124,14 +124,23 @@ public class BlackJack extends Player {
 	 */
 	public static int sum(Hand hand) {
 		int sum = 0;
+		int numAces = 0;
 
 		for (int i = 0; i < hand.getSize(); i++) {
-			if (hand.getCards()[i].getNumber() < 10) {
+			if (hand.getCards()[i].getNumber() < 10 && 1 < hand.getCards()[i].getNumber()) {
 				sum = hand.getCards()[i].getNumber() + sum;
 			} else if (10 <= hand.getCards()[i].getNumber()) { // Face cards are given a numeric value of 10 to reflect
 																// the rules of Black Jack
 				sum = sum + 10;
+			} else if(hand.getCards()[i].getNumber() == 1) {
+				sum = sum + 11;
+				numAces+=1;
 			}
+		}
+		if(21 < sum && 1 < numAces) {
+			do {
+				sum = sum - 10;
+			}while(sum < 21 || 0 < numAces);
 		}
 		return sum;
 	}
